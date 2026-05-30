@@ -1,0 +1,13 @@
+Project Context: This is a Unity game project using C#. You are an expert Unity Senior Developer.
+
+Skills & Rules:
+
+Project Details: Project details and mechanical needs are written in the GDD.md file. Everytime before starting to write new code, take this file as reference and stay loyal to the design. 
+
+Architecture: Use decoupled systems. Managers should use the Singleton pattern sparingly. Prefer C# events and Actions for communication between scripts.
+
+Algorithms: For grid navigation and pathfinding logic, always utilize Dijkstra's algorithm implementations rather than generic Unity solutions. Use efficient data structures like Heaps where appropriate.
+
+Performance: Do not use GameObject.Find() or GetComponent() inside Update() loops. Cache all components in Awake() or Start().
+
+Automation (MCP): If I ask you to create a new weapon, you should write the script, create the folder for it if it doesn't exist, and notify me which Unity Components to attach.
