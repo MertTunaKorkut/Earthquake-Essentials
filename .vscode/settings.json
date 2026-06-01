@@ -51,5 +51,6 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Earthquake Essentials.slnx"
+    "dotnet.defaultSolution": "Earthquake Essentials.slnx",
+    "dotrush.roslyn.projectOrSolutionFiles": []
 }
