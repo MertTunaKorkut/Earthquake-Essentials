@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f149b6b8ed4e3454da8e92554dce113e, type: 3}
+  m_Name: Item_FirstAid
+  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  itemName: "\u0130lk Yard\u0131m \xC7antas\u0131"
+  itemSprite: {fileID: 123668959476363841, guid: 400239369cffc0f44ba4b23efb99d1a2, type: 3}
+  isEssential: 1
+  itemType: 0
+  description: "Yaralanmalarda ilk m\xFCdahale i\xE7in \u015Fart."

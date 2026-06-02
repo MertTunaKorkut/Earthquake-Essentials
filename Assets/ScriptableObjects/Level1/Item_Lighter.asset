@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f149b6b8ed4e3454da8e92554dce113e, type: 3}
+  m_Name: Item_Lighter
+  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  itemName: "\xC7akmak"
+  itemSprite: {fileID: 3447037166458568269, guid: 003e7ab64fcbaf24a97ab9b82a7b5053, type: 3}
+  isEssential: 0
+  itemType: 2
+  description: "Tehlikeli \u2014 gaz ka\xE7a\u011F\u0131 varsa yang\u0131na neden
+    olabilir."

@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f149b6b8ed4e3454da8e92554dce113e, type: 3}
+  m_Name: Item_Flashlight
+  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  itemName: El Feneri
+  itemSprite: {fileID: -5913738696227704600, guid: be6e63215805b5a479cb216abfde171a, type: 3}
+  isEssential: 1
+  itemType: 0
+  description: "Karanl\u0131k ortamlarda hayat kurtar\u0131r."
