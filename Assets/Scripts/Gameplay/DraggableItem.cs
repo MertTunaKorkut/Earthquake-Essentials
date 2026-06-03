@@ -1,13 +1,17 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
+using System;
 using System.Collections;
 
 /// <summary>
 /// Level 1'deki sürüklenebilir eşya davranışı.
 /// Mouse/touch ile sürüklenir, çantaya bırakılabilir.
+/// Yeni Input System uyumlu: EventSystem interface'leri kullanır.
+/// Gereksinim: Sahnede EventSystem + Kamerada Physics2DRaycaster olmalı.
 /// </summary>
 [RequireComponent(typeof(SpriteRenderer))]
 [RequireComponent(typeof(BoxCollider2D))]
-public class DraggableItem : MonoBehaviour
+public class DraggableItem : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
     [Header("Item Verisi")]
     [Tooltip("Bu eşyanın ScriptableObject verisi")]
@@ -29,6 +33,17 @@ public class DraggableItem : MonoBehaviour
     private bool isReturning = false;
     private bool isAccepted = false;
     private Camera mainCamera;
+
+    /// <summary>
+    /// Eşyanın şu an sürüklenip sürüklenmediğini döndürür.
+    /// </summary>
+    public bool IsDragging => isDragging;
+
+    /// <summary>
+    /// Eşya bırakıldığında (mouse/touch kalktığında) tetiklenir.
+    /// BackpackDropZone bu event'i dinleyerek bırakma anını yakalar.
+    /// </summary>
+    public event Action<DraggableItem> OnDropped;
 
     private void Awake()
     {
@@ -66,37 +81,55 @@ public class DraggableItem : MonoBehaviour
         }
     }
 
-    private void OnMouseDown()
+    /// <summary>
+    /// Pointer (mouse/touch) basıldığında çağrılır.
+    /// Eski OnMouseDown'ın EventSystem karşılığı.
+    /// </summary>
+    public void OnPointerDown(PointerEventData eventData)
     {
         if (isAccepted || isReturning) return;
 
         isDragging = true;
         isReturning = false;
 
+        Debug.Log(this.name + " is being dragged");
         // Sürüklenirken büyüt ve öne getir
         transform.localScale = originalScale * dragScaleMultiplier;
         spriteRenderer.sortingOrder = 100;
     }
 
-    private void OnMouseDrag()
+    /// <summary>
+    /// Pointer sürüklenirken her frame çağrılır.
+    /// Eski OnMouseDrag'ın EventSystem karşılığı.
+    /// </summary>
+    public void OnDrag(PointerEventData eventData)
     {
         if (!isDragging) return;
 
-        Vector3 mousePos = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-        mousePos.z = 0f;
-        transform.position = mousePos;
+        Vector3 worldPos = mainCamera.ScreenToWorldPoint(eventData.position);
+        worldPos.z = 0f;
+        transform.position = worldPos;
     }
 
-    private void OnMouseUp()
+    /// <summary>
+    /// Pointer bırakıldığında çağrılır.
+    /// Eski OnMouseUp'ın EventSystem karşılığı.
+    /// OnDropped event'ini tetikleyerek BackpackDropZone'a haber verir.
+    /// </summary>
+    public void OnPointerUp(PointerEventData eventData)
     {
         if (!isDragging) return;
 
         isDragging = false;
 
+        // Bırakıldığını herkese haber ver (BackpackDropZone dinliyor)
+        OnDropped?.Invoke(this);
+
         // Sorting order'ı geri al (kabul edilmediyse)
         if (!isAccepted)
         {
             spriteRenderer.sortingOrder = originalSortingOrder;
+            transform.localScale = originalScale;
         }
     }
 

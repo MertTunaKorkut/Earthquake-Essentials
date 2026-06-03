@@ -1,9 +1,12 @@
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 /// <summary>
 /// Acil durum çantasının drop zone mantığı.
 /// Eşyalar çantanın üzerine bırakıldığında doğru/yanlış kontrolü yapar.
+/// Event-driven yaklaşım: DraggableItem'ın OnDropped event'ini dinler.
+/// Trigger ile zone içindeki eşyaları takip eder.
 /// </summary>
 [RequireComponent(typeof(BoxCollider2D))]
 public class BackpackDropZone : MonoBehaviour
@@ -30,6 +33,12 @@ public class BackpackDropZone : MonoBehaviour
     /// </summary>
     public event Action<ItemData> OnItemRejected;
 
+    /// <summary>
+    /// Şu anda zone içinde bulunan DraggableItem'ların listesi.
+    /// Trigger giriş/çıkış ile güncellenir.
+    /// </summary>
+    private HashSet<DraggableItem> itemsInZone = new HashSet<DraggableItem>();
+
     private void Awake()
     {
         // Collider'ın trigger olduğundan emin ol
@@ -37,29 +46,54 @@ public class BackpackDropZone : MonoBehaviour
         col.isTrigger = true;
     }
 
+    /// <summary>
+    /// Bir eşya zone'a girdiğinde: kaydet ve OnDropped event'ine abone ol.
+    /// </summary>
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // Sadece bırakılan (sürükleme biten) DraggableItem'ları kontrol et
         DraggableItem item = other.GetComponent<DraggableItem>();
         if (item == null) return;
         if (item.itemData == null) return;
 
-        // Eşya hâlâ sürükleniyorsa henüz işlem yapma
-        // OnMouseUp tetiklenince trigger tekrar kontrol edilecek
+        // Zone listesine ekle
+        if (itemsInZone.Add(item))
+        {
+            // Bırakma event'ine abone ol
+            item.OnDropped += HandleItemDropped;
+            Debug.Log($"[Backpack] '{item.itemData.itemName}' zone'a girdi.");
+        }
     }
 
-    private void OnTriggerStay2D(Collider2D other)
+    /// <summary>
+    /// Bir eşya zone'dan çıktığında: kayıttan sil ve event aboneliğini kaldır.
+    /// </summary>
+    private void OnTriggerExit2D(Collider2D other)
     {
-        // DraggableItem'ın mouse bırakılmasını bekle
         DraggableItem item = other.GetComponent<DraggableItem>();
         if (item == null) return;
-        if (item.itemData == null) return;
 
-        // Mouse'un bırakılıp bırakılmadığını kontrol et
-        if (Input.GetMouseButtonUp(0))
+        if (itemsInZone.Remove(item))
         {
-            ProcessItem(item);
+            // Event aboneliğini temizle
+            item.OnDropped -= HandleItemDropped;
+            Debug.Log($"[Backpack] '{item.itemData?.itemName}' zone'dan çıktı.");
         }
+    }
+
+    /// <summary>
+    /// DraggableItem bırakıldığında çağrılır (event callback).
+    /// Eşya hâlâ zone içindeyse işle.
+    /// </summary>
+    private void HandleItemDropped(DraggableItem item)
+    {
+        // Eşya zone içinde mi kontrol et
+        if (!itemsInZone.Contains(item)) return;
+
+        // Aboneliği temizle (bir kez işlendi)
+        item.OnDropped -= HandleItemDropped;
+        itemsInZone.Remove(item);
+
+        ProcessItem(item);
     }
 
     /// <summary>
@@ -106,5 +140,24 @@ public class BackpackDropZone : MonoBehaviour
     public void ResetDropZone()
     {
         acceptedItemCount = 0;
+
+        // Tüm event aboneliklerini temizle
+        foreach (var item in itemsInZone)
+        {
+            if (item != null)
+                item.OnDropped -= HandleItemDropped;
+        }
+        itemsInZone.Clear();
+    }
+
+    private void OnDestroy()
+    {
+        // Sahne kapanırken tüm abonelikleri temizle (memory leak önlemi)
+        foreach (var item in itemsInZone)
+        {
+            if (item != null)
+                item.OnDropped -= HandleItemDropped;
+        }
+        itemsInZone.Clear();
     }
 }
