@@ -22,7 +22,7 @@ public class HUDController : MonoBehaviour
     // Dahili
     private int totalRequired = 0;
 
-    private void OnEnable()
+    private void Start()
     {
         // ScoreManager olaylarını dinle
         if (ScoreManager.Instance != null)
@@ -32,7 +32,7 @@ public class HUDController : MonoBehaviour
         }
     }
 
-    private void OnDisable()
+    private void OnDestroy()
     {
         if (ScoreManager.Instance != null)
             ScoreManager.Instance.OnScoreChanged -= HandleScoreChanged;

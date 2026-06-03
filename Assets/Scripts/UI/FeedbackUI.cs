@@ -53,7 +53,7 @@ public class FeedbackUI : MonoBehaviour
             StopCoroutine(hideCorrectCoroutine);
 
         if (correctItemText != null && !string.IsNullOrEmpty(itemName))
-            correctItemText.text = $"✓ {itemName}";
+            correctItemText.text = $"{itemName}";
 
         correctPanel.SetActive(true);
         hideCorrectCoroutine = StartCoroutine(HideAfterDelay(correctPanel, displayDuration));
@@ -70,7 +70,7 @@ public class FeedbackUI : MonoBehaviour
             StopCoroutine(hideWrongCoroutine);
 
         if (wrongItemText != null && !string.IsNullOrEmpty(itemName))
-            wrongItemText.text = $"✗ {itemName}";
+            wrongItemText.text = $"{itemName}";
 
         wrongPanel.SetActive(true);
         hideWrongCoroutine = StartCoroutine(HideAfterDelay(wrongPanel, displayDuration));

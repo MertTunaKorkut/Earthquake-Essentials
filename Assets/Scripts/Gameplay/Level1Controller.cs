@@ -70,7 +70,7 @@ public class Level1Controller : MonoBehaviour
         if (hudController != null)
             hudController.UpdateProgress(accepted, requiredItems);
 
-        Debug.Log($"[Level1] ✓ '{item.itemName}' kabul edildi. İlerleme: {accepted}/{requiredItems}");
+        Debug.Log($"[Level1]  '{item.itemName}' kabul edildi. İlerleme: {accepted}/{requiredItems}");
     }
 
     /// <summary>
@@ -81,7 +81,7 @@ public class Level1Controller : MonoBehaviour
         if (feedbackUI != null)
             feedbackUI.ShowWrong(item.itemName);
 
-        Debug.Log($"[Level1] ✗ '{item.itemName}' reddedildi.");
+        Debug.Log($"[Level1]  '{item.itemName}' reddedildi.");
     }
 
     /// <summary>
@@ -92,7 +92,7 @@ public class Level1Controller : MonoBehaviour
         if (levelCompleted) return;
         levelCompleted = true;
 
-        Debug.Log("[Level1] 🎉 Tüm eşyalar toplandı! Level tamamlanıyor...");
+        Debug.Log("[Level1]  Tüm eşyalar toplandı! Level tamamlanıyor...");
 
         if (feedbackUI != null)
             feedbackUI.ShowLevelComplete();

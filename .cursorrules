@@ -12,4 +12,4 @@ Performance: Do not use GameObject.Find() or GetComponent() inside Update() loop
 
 Automation (MCP): If I ask you to create a new weapon, you should write the script, create the folder for it if it doesn't exist, and notify me which Unity Components to attach.
 
-Non-MCP Jobs: If you need to make something that isn't handled by MCP and needs to be done inside the Unity Editor, instead of writing a C# script for it, explain it to me with details step by step, so I can do it myself.
+Non-MCP Jobs: If you need to make something that isn't handled by MCP and needs to be done inside the Unity Editor, instead of writing an Editor script (like a HUDSetup.cs) for it, explain it to me with details step by step, so I can do it myself.
