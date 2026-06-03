@@ -29,22 +29,29 @@ public class AudioManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        // Audio source'ları otomatik oluştur (eğer atanmamışsa)
+        /*
+        // Child objelerden AudioSource'ları otomatik bul
         if (musicSource == null)
         {
-            musicSource = gameObject.AddComponent<AudioSource>();
-            musicSource.loop = true;
-            musicSource.playOnAwake = false;
-            musicSource.volume = musicVolume;
+            Transform musicChild = transform.Find("MusicSource");
+            if (musicChild != null)
+                musicSource = musicChild.GetComponent<AudioSource>();
+
+            if (musicSource == null)
+                Debug.LogError("[AudioManager] MusicSource child objesi veya AudioSource bulunamadı!");
         }
 
         if (sfxSource == null)
         {
-            sfxSource = gameObject.AddComponent<AudioSource>();
-            sfxSource.loop = false;
-            sfxSource.playOnAwake = false;
-            sfxSource.volume = sfxVolume;
+            Transform sfxChild = transform.Find("SFXSource");
+            if (sfxChild != null)
+                sfxSource = sfxChild.GetComponent<AudioSource>();
+
+            if (sfxSource == null)
+                Debug.LogError("[AudioManager] SFXSource child objesi veya AudioSource bulunamadı!");
         }
+        */
+        
     }
 
     /// <summary>

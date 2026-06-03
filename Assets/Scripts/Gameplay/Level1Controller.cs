@@ -24,6 +24,16 @@ public class Level1Controller : MonoBehaviour
     [Tooltip("Level tamamlandıktan sonra geçiş bekleme süresi (saniye)")]
     public float completionDelay = 1.5f;
 
+    [Header("Ses Dosyaları")]
+    [Tooltip("Arka plan müziği (loop olarak çalar)")]
+    public AudioClip bgmClip;
+
+    [Tooltip("Doğru eşya kabul edildiğinde çalan ses")]
+    public AudioClip acceptSFX;
+
+    [Tooltip("Yanlış eşya reddedildiğinde çalan ses")]
+    public AudioClip rejectSFX;
+
     private bool levelCompleted = false;
 
     private void Start()
@@ -42,6 +52,10 @@ public class Level1Controller : MonoBehaviour
         // HUD'ı başlat
         if (hudController != null)
             hudController.Initialize(requiredItems);
+
+        // Arka plan müziğini başlat
+        if (bgmClip != null && AudioManager.Instance != null)
+            AudioManager.Instance.PlayMusic(bgmClip);
 
         Debug.Log("[Level1Controller] Level 1 başladı!");
     }
@@ -64,6 +78,10 @@ public class Level1Controller : MonoBehaviour
     {
         int accepted = backpackDropZone.GetAcceptedCount();
 
+        // Kabul ses efekti
+        if (acceptSFX != null && AudioManager.Instance != null)
+            AudioManager.Instance.PlaySFX(acceptSFX);
+
         if (feedbackUI != null)
             feedbackUI.ShowCorrect(item.itemName);
 
@@ -78,6 +96,10 @@ public class Level1Controller : MonoBehaviour
     /// </summary>
     private void HandleItemRejected(ItemData item)
     {
+        // Red ses efekti
+        if (rejectSFX != null && AudioManager.Instance != null)
+            AudioManager.Instance.PlaySFX(rejectSFX);
+
         if (feedbackUI != null)
             feedbackUI.ShowWrong(item.itemName);
 
@@ -93,6 +115,10 @@ public class Level1Controller : MonoBehaviour
         levelCompleted = true;
 
         Debug.Log("[Level1]  Tüm eşyalar toplandı! Level tamamlanıyor...");
+
+        // Level bittiğinde müziği durdur
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.StopMusic();
 
         if (feedbackUI != null)
             feedbackUI.ShowLevelComplete();
