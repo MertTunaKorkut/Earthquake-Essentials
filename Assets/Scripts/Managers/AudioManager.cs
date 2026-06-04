@@ -28,30 +28,6 @@ public class AudioManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
-
-        /*
-        // Child objelerden AudioSource'ları otomatik bul
-        if (musicSource == null)
-        {
-            Transform musicChild = transform.Find("MusicSource");
-            if (musicChild != null)
-                musicSource = musicChild.GetComponent<AudioSource>();
-
-            if (musicSource == null)
-                Debug.LogError("[AudioManager] MusicSource child objesi veya AudioSource bulunamadı!");
-        }
-
-        if (sfxSource == null)
-        {
-            Transform sfxChild = transform.Find("SFXSource");
-            if (sfxChild != null)
-                sfxSource = sfxChild.GetComponent<AudioSource>();
-
-            if (sfxSource == null)
-                Debug.LogError("[AudioManager] SFXSource child objesi veya AudioSource bulunamadı!");
-        }
-        */
-        
     }
 
     /// <summary>

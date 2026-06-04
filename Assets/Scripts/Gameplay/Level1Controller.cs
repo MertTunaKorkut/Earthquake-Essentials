@@ -17,11 +17,14 @@ public class Level1Controller : MonoBehaviour
     [Tooltip("Geri bildirim UI")]
     public FeedbackUI feedbackUI;
 
+    [Tooltip("Level sonu ekranı (puan + sonraki seviye butonu)")]
+    public LevelCompleteUI levelCompleteUI;
+
     [Header("Level Ayarları")]
     [Tooltip("Bu level'da kaç doğru eşya toplanmalı")]
     public int requiredItems = 5;
 
-    [Tooltip("Level tamamlandıktan sonra geçiş bekleme süresi (saniye)")]
+    [Tooltip("Level tamamlandıktan sonra geçiş bekleme süresi (saniye) — sadece FeedbackUI gecikmesi için")]
     public float completionDelay = 1.5f;
 
     [Header("Ses Dosyaları")]
@@ -120,24 +123,31 @@ public class Level1Controller : MonoBehaviour
         if (AudioManager.Instance != null)
             AudioManager.Instance.StopMusic();
 
-        if (feedbackUI != null)
-            feedbackUI.ShowLevelComplete();
-
-        StartCoroutine(CompleteLevel());
-    }
-
-    private IEnumerator CompleteLevel()
-    {
-        yield return new WaitForSeconds(completionDelay);
-
-        // GameManager üzerinden Level 2'ye geç
-        if (GameManager.Instance != null)
+        // Level sonu ekranını göster (puan + sonraki seviye butonu)
+        if (levelCompleteUI != null)
         {
-            GameManager.Instance.OnLevel1Complete();
+            levelCompleteUI.Show();
         }
         else
         {
-            Debug.LogWarning("[Level1Controller] GameManager bulunamadı, sahne geçişi yapılamıyor.");
+            // Fallback: LevelCompleteUI yoksa eski davranış
+            Debug.LogWarning("[Level1Controller] LevelCompleteUI atanmamış, doğrudan geçiş yapılıyor.");
+            if (feedbackUI != null)
+                feedbackUI.ShowLevelComplete();
+            StartCoroutine(FallbackCompleteLevel());
         }
+    }
+
+    /// <summary>
+    /// LevelCompleteUI atanmamışsa kullanılacak fallback geçişi.
+    /// </summary>
+    private IEnumerator FallbackCompleteLevel()
+    {
+        yield return new WaitForSeconds(completionDelay);
+
+        if (GameManager.Instance != null)
+            GameManager.Instance.OnLevel1Complete();
+        else
+            Debug.LogWarning("[Level1Controller] GameManager bulunamadı, sahne geçişi yapılamıyor.");
     }
 }
