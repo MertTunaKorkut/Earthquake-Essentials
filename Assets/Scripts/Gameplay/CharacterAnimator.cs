@@ -30,6 +30,10 @@ public class CharacterAnimator : MonoBehaviour
     [Tooltip("Karakterin bölgeye hareket hızı")]
     public float moveSpeed = 8f;
 
+    [Header("Fade Ayarları")]
+    [Tooltip("Karakterin kaybolma/belirme süresi (saniye)")]
+    public float fadeDuration = 0.3f;
+
     [Header("Hasar Ayarları")]
     [Tooltip("Hasar pozisyonunda bekleme süresi (saniye)")]
     public float damageHoldDuration = 1.0f;
@@ -125,6 +129,65 @@ public class CharacterAnimator : MonoBehaviour
         onComplete?.Invoke();
     }
 
+    // ════════════════════════════ FADE TELEPORT ════════════════════════════
+
+    /// <summary>
+    /// Karakteri fade-out → teleport → fade-in ile hedefe taşır.
+    /// Oyuncu bir alana tıkladığında yürümek yerine bu kullanılır.
+    /// </summary>
+    public void FadeToPosition(Vector3 target, Action onComplete = null)
+    {
+        if (isMoving) return;
+        StartCoroutine(FadeTeleportRoutine(target, onComplete));
+    }
+
+    private IEnumerator FadeTeleportRoutine(Vector3 target, Action onComplete)
+    {
+        isMoving = true;
+
+        // 1. Fade out (idle pozisyonunda kaybol)
+        yield return StartCoroutine(FadeCharacter(1f, 0f, fadeDuration));
+
+        // 2. Teleport
+        target.z = transform.position.z;
+        transform.position = target;
+
+        // 3. Fade in (yeni pozisyonda belir)
+        yield return StartCoroutine(FadeCharacter(0f, 1f, fadeDuration));
+
+        isMoving = false;
+        onComplete?.Invoke();
+    }
+
+    /// <summary>
+    /// Karakterin alpha değerini belirli sürede değiştirir (fade-in / fade-out).
+    /// </summary>
+    private IEnumerator FadeCharacter(float fromAlpha, float toAlpha, float duration)
+    {
+        float elapsed = 0f;
+        Color c = characterSpriteRenderer.color;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            c.a = Mathf.Lerp(fromAlpha, toAlpha, t);
+            characterSpriteRenderer.color = c;
+            yield return null;
+        }
+
+        c.a = toAlpha;
+        characterSpriteRenderer.color = c;
+    }
+
+    /// <summary>
+    /// Karakteri fade ile odanın ortasına (başlangıç pozisyonuna) geri getirir.
+    /// </summary>
+    public void FadeToCenter(Action onComplete = null)
+    {
+        FadeToPosition(roomCenterPosition, onComplete);
+    }
+
     // ════════════════════════════ TEHLİKE ANİMASYONLARI ════════════════════════════
 
     /// <summary>
@@ -205,7 +268,10 @@ public class CharacterAnimator : MonoBehaviour
         // Sorting order — karakterin önünde
         hazardSR.sortingOrder = characterSpriteRenderer.sortingOrder + 1;
 
-        // Düşüş animasyonu (ease in — yerçekimi hissi)
+        // Düşerken dönme açısı (kaya için yavaşça dönme)
+        float rotationAmount = zone.hazardFallRotation;
+
+        // Düşüş animasyonu (ease in — yerçekimi hissi) + yavaş dönme
         float elapsed = 0f;
         while (elapsed < zone.hazardAnimDuration)
         {
@@ -213,10 +279,20 @@ public class CharacterAnimator : MonoBehaviour
             float t = Mathf.Clamp01(elapsed / zone.hazardAnimDuration);
             float eased = t * t; // Ease in quad
             hazardSR.transform.position = Vector3.Lerp(startPos, targetPos, eased);
+
+            // Düşerken yavaşça dön (lineer — doğal görünüm)
+            if (rotationAmount != 0f)
+            {
+                float currentRotation = Mathf.Lerp(0f, rotationAmount, t);
+                hazardSR.transform.rotation = Quaternion.Euler(0f, 0f, currentRotation);
+            }
+
             yield return null;
         }
 
         hazardSR.transform.position = targetPos;
+        if (rotationAmount != 0f)
+            hazardSR.transform.rotation = Quaternion.Euler(0f, 0f, rotationAmount);
     }
 
     // ───────────────── Topple: Buzdolabı/gardırop devrilmesi ─────────────────

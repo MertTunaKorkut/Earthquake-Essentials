@@ -41,6 +41,9 @@ public class ClickableZone : MonoBehaviour, IPointerClickHandler, IPointerEnterH
     [Tooltip("FallFromAbove: Objenin ne kadar yukarıdan düşeceği (Y offset)")]
     public float hazardFallHeight = 5f;
 
+    [Tooltip("FallFromAbove: Düşerken dönme açısı (derece, 0 = dönme yok)")]
+    public float hazardFallRotation = 0f;
+
     [Tooltip("Topple: Devrilme açısı (derece)")]
     public float hazardToppleAngle = 75f;
 

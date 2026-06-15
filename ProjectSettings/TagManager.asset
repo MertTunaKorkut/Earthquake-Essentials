@@ -41,11 +41,20 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Arkaplan
+    uniqueID: 271219443
+    locked: 0
   - name: Bag
     uniqueID: 3896771405
     locked: 0
   - name: Items
     uniqueID: 2096497015
+    locked: 0
+  - name: Hazards
+    uniqueID: 2869861337
+    locked: 0
+  - name: Character
+    uniqueID: 3982000831
     locked: 0
   m_RenderingLayers:
   - Default

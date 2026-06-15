@@ -48,6 +48,19 @@ public class Level2Controller : MonoBehaviour
     [Tooltip("Oda tamamlandıktan sonra sonraki odaya geçiş bekleme süresi (saniye)")]
     public float roomCompleteDelay = 2f;
 
+    [Header("Kaya (Süre Dolduğunda)")]
+    [Tooltip("Süre dolduğunda düşen kaya sprite rendererı")]
+    public SpriteRenderer rockSpriteRenderer;
+
+    [Tooltip("Kayanın düşme yüksekliği")]
+    public float rockFallHeight = 5f;
+
+    [Tooltip("Kayanın düşme süresi (saniye)")]
+    public float rockFallDuration = 0.5f;
+
+    [Tooltip("Kayanın düşerken dönme açısı (derece)")]
+    public float rockFallRotation = 180f;
+
     // Dahili
     private float timeRemaining;
     private bool timerActive = false;
@@ -171,13 +184,16 @@ public class Level2Controller : MonoBehaviour
     }
 
     /// <summary>
-    /// Timer bittiğinde çağrılır — hasar animasyonu ve sonraki oda.
+    /// Timer bittiğinde çağrılır — kaya düşme animasyonu ve sonraki oda.
+    /// 30 saniye boyunca doğru seçim yapılmazsa kaya karakterin üstüne düşer.
     /// </summary>
     private void HandleTimerExpired()
     {
         if (roomCompleted) return;
 
-        Debug.Log("[Level2Controller] Süre doldu! Hasar animasyonu başlatılıyor...");
+        Debug.Log("[Level2Controller] Süre doldu! Kaya düşme animasyonu başlatılıyor...");
+
+        roomCompleted = true;
 
         // Zone'ları kapat
         SetAllZonesInteractable(false);
@@ -186,34 +202,134 @@ public class Level2Controller : MonoBehaviour
         if (cameraShake != null)
             cameraShake.StopShake();
 
-        // Karakter ortada — zone olmadan hasar animasyonu
-        if (characterAnimator != null)
+        // Kaya düşme animasyonu
+        if (characterAnimator != null && rockSpriteRenderer != null)
         {
+            StartCoroutine(RockFallOnCharacterRoutine());
+        }
+        else if (characterAnimator != null)
+        {
+            // rockSpriteRenderer yoksa sadece hasar sprite'ı göster
             characterAnimator.PlayHazardDamage(null, () =>
             {
-                // -50 puan
-                if (ScoreManager.Instance != null)
-                    ScoreManager.Instance.AddIncorrect();
-
-                // Geri bildirim göster
-                if (feedbackUI != null)
-                    feedbackUI.ShowWrong("Süre doldu!");
-
-                // Yanlış SFX
-                PlaySFX(incorrectSFX);
-
-                // Oda tamamla
-                CompleteRoom();
+                ApplyTimerExpiredPenalty();
             });
         }
         else
         {
             // CharacterAnimator yoksa direkt puan ver ve geç
-            if (ScoreManager.Instance != null)
-                ScoreManager.Instance.AddIncorrect();
-
-            CompleteRoom();
+            ApplyTimerExpiredPenalty();
         }
+    }
+
+    /// <summary>
+    /// Süre dolduğunda kaya düşme animasyonu.
+    /// Kaya yukarıdan yavaşça dönerek karakterin üstüne düşer.
+    /// </summary>
+    private IEnumerator RockFallOnCharacterRoutine()
+    {
+        // Pozisyonları ayarla
+        Vector3 characterPos = characterAnimator.transform.position;
+        Vector3 targetPos = characterPos + Vector3.up * 0.5f;
+        Vector3 startPos = characterPos + Vector3.up * rockFallHeight;
+
+        rockSpriteRenderer.transform.position = startPos;
+        rockSpriteRenderer.transform.rotation = Quaternion.identity;
+        rockSpriteRenderer.gameObject.SetActive(true);
+
+        // Sorting order — karakterin önünde
+        SpriteRenderer charSR = characterAnimator.GetComponent<SpriteRenderer>();
+        if (charSR != null)
+            rockSpriteRenderer.sortingOrder = charSR.sortingOrder + 1;
+
+        // Düşüş animasyonu (ease in — yerçekimi hissi) + yavaş dönme
+        float elapsed = 0f;
+        while (elapsed < rockFallDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / rockFallDuration);
+            float eased = t * t; // Ease in quad
+
+            // Pozisyon
+            rockSpriteRenderer.transform.position = Vector3.Lerp(startPos, targetPos, eased);
+
+            // Yavaşça dönme
+            if (rockFallRotation != 0f)
+            {
+                float currentRotation = Mathf.Lerp(0f, rockFallRotation, t);
+                rockSpriteRenderer.transform.rotation = Quaternion.Euler(0f, 0f, currentRotation);
+            }
+
+            yield return null;
+        }
+
+        rockSpriteRenderer.transform.position = targetPos;
+        if (rockFallRotation != 0f)
+            rockSpriteRenderer.transform.rotation = Quaternion.Euler(0f, 0f, rockFallRotation);
+
+        // Hasar sprite'ına geç
+        characterAnimator.ShowDamage();
+
+        // Kısa bekleme
+        yield return new WaitForSeconds(1.0f);
+
+        // Kaya fade out
+        yield return StartCoroutine(FadeOutSpriteRoutine(rockSpriteRenderer));
+
+        // Puan ve geri bildirim
+        ApplyTimerExpiredPenalty();
+    }
+
+    /// <summary>
+    /// Süre dolduğunda uygulanan ceza: -50 puan, geri bildirim, oda tamamla.
+    /// </summary>
+    private void ApplyTimerExpiredPenalty()
+    {
+        // -50 puan
+        if (ScoreManager.Instance != null)
+            ScoreManager.Instance.AddIncorrect();
+
+        // Geri bildirim göster
+        if (feedbackUI != null)
+            feedbackUI.ShowWrong("Süre doldu! Kaya başına düştü!");
+
+        // Yanlış SFX
+        PlaySFX(incorrectSFX);
+
+        // Oda tamamla
+        CompleteRoom();
+    }
+
+    /// <summary>
+    /// SpriteRenderer'ı fade out yapar.
+    /// </summary>
+    private IEnumerator FadeOutSpriteRoutine(SpriteRenderer sr)
+    {
+        if (sr == null) yield break;
+
+        float duration = 0.3f;
+        float elapsed = 0f;
+        Color startColor = sr.color;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            Color c = startColor;
+            c.a = Mathf.Lerp(1f, 0f, t);
+            sr.color = c;
+            yield return null;
+        }
+
+        sr.gameObject.SetActive(false);
+
+        // Alpha'yı geri yükle
+        Color resetColor = startColor;
+        resetColor.a = 1f;
+        sr.color = resetColor;
+
+        // Rotasyonu sıfırla
+        sr.transform.rotation = Quaternion.identity;
     }
 
     // ─────────────────────────────── ZONE İŞLEMLERİ ───────────────────────────────
@@ -229,16 +345,16 @@ public class Level2Controller : MonoBehaviour
         roomCompleted = true;
         timerActive = false;
 
-        // Kamera sallamayı durdur
+        // Kamera sallama yı durdur
         if (cameraShake != null)
             cameraShake.StopShake();
 
-        // Karakter seçilen bölgeye hareket et
+        // Karakter fade-out → teleport → korunma sprite → fade-in
         if (characterAnimator != null)
         {
-            characterAnimator.MoveToPosition(zone.GetCharacterPosition(), () =>
+            characterAnimator.FadeToPosition(zone.GetCharacterPosition(), () =>
             {
-                // Korunma pozisyonuna geç
+                // Korunma pozisyonuna geç (fade-in ile birlikte görünecek)
                 characterAnimator.ShowProtect();
 
                 // +100 puan
@@ -278,10 +394,10 @@ public class Level2Controller : MonoBehaviour
     {
         Debug.Log($"[Level2Controller] Tehlikeli bölge seçildi: '{zone.zoneName}'");
 
-        // Karakter seçilen bölgeye hareket et
+        // Karakter fade ile seçilen bölgeye git
         if (characterAnimator != null)
         {
-            characterAnimator.MoveToPosition(zone.GetCharacterPosition(), () =>
+            characterAnimator.FadeToPosition(zone.GetCharacterPosition(), () =>
             {
                 // Zone-spesifik tehlike animasyonu
                 characterAnimator.PlayHazardDamage(zone, () =>
@@ -303,8 +419,8 @@ public class Level2Controller : MonoBehaviour
                     // Karakter idle'a dön
                     characterAnimator.ShowIdle();
 
-                    // Karakteri odanın ortasına geri getir
-                    characterAnimator.ReturnToCenter(() =>
+                    // Karakteri odanın ortasına fade ile geri getir
+                    characterAnimator.FadeToCenter(() =>
                     {
                         // Hâlâ aktif zone var mı kontrol et
                         if (HasActiveZones() && !roomCompleted)
