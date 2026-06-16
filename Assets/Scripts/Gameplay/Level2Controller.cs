@@ -112,10 +112,6 @@ public class Level2Controller : MonoBehaviour
         if (characterAnimator != null)
             characterAnimator.ShowIdle();
 
-        // Arka plan müziğini başlat
-        if (bgmClip != null && AudioManager.Instance != null)
-            AudioManager.Instance.PlayMusic(bgmClip);
-
         // Countdown başlat
         countdownUI.StartCountdown(roomData.countdownDuration);
 
@@ -175,10 +171,15 @@ public class Level2Controller : MonoBehaviour
         // Kamera sallama başlat
         if (cameraShake != null)
             cameraShake.StartShake();
-
+        
+        //Deprem sesini başlat
         if (earthquakeRumbleSFX != null && AudioManager.Instance != null) 
             AudioManager.Instance.PlayEnvironment(earthquakeRumbleSFX);
-
+            
+        // Arka plan müziğini başlat
+        if (bgmClip != null && AudioManager.Instance != null)
+            AudioManager.Instance.PlayMusic(bgmClip);
+            
         // Zone'ları tıklanabilir yap
         SetAllZonesInteractable(true);
     }
@@ -292,6 +293,9 @@ public class Level2Controller : MonoBehaviour
         // Hasar sprite'ına geç
         characterAnimator.ShowDamage();
 
+        // Yanlış SFX
+        if (incorrectSFX != null) PlaySFX(incorrectSFX);
+
         if (rockCrashSFX != null) PlaySFX(rockCrashSFX);
 
         // Kısa bekleme
@@ -316,9 +320,6 @@ public class Level2Controller : MonoBehaviour
         // Geri bildirim göster
         if (feedbackUI != null)
             feedbackUI.ShowWrong("Süre doldu!");
-
-        // Yanlış SFX
-        PlaySFX(incorrectSFX);
 
         // Oda tamamla
         CompleteRoom();
@@ -372,6 +373,9 @@ public class Level2Controller : MonoBehaviour
         // Kamera sallama yı durdur
         if (cameraShake != null)
             cameraShake.StopShake();
+        
+        // Doğru SFX
+        if (correctSFX != null) PlaySFX(correctSFX);
 
         // Karakter fade-out → teleport → korunma sprite → fade-in
         if (characterAnimator != null)
@@ -384,9 +388,6 @@ public class Level2Controller : MonoBehaviour
                 // +100 puan
                 if (ScoreManager.Instance != null)
                     ScoreManager.Instance.AddCorrect();
-
-                // Doğru SFX
-                PlaySFX(correctSFX);
 
                 // Geri bildirim
                 if (feedbackUI != null)
@@ -418,24 +419,23 @@ public class Level2Controller : MonoBehaviour
     {
         Debug.Log($"[Level2Controller] Tehlikeli bölge seçildi: '{zone.zoneName}'");
 
+        // Yanlış SFX
+        if (incorrectSFX != null) PlaySFX(incorrectSFX);
+
         // Karakter fade ile seçilen bölgeye git
         if (characterAnimator != null)
         {
             characterAnimator.FadeToPosition(zone.GetCharacterPosition(), () =>
-            {
+            {   
+                if(zone.hazardSFX != null)
+                    PlaySFX(zone.hazardSFX);
+                    
                 // Zone-spesifik tehlike animasyonu
                 characterAnimator.PlayHazardDamage(zone, () =>
                 {
-                    // Tehlike SFX
-                    if (zone.hazardSFX != null && AudioManager.Instance != null)
-                        AudioManager.Instance.PlaySFX(zone.hazardSFX);
-
                     // -50 puan
                     if (ScoreManager.Instance != null)
                         ScoreManager.Instance.AddIncorrect();
-
-                    // Yanlış SFX
-                    PlaySFX(incorrectSFX);
 
                     // Geri bildirim
                     if (feedbackUI != null)
@@ -581,5 +581,19 @@ public class Level2Controller : MonoBehaviour
     {
         if (clip != null && AudioManager.Instance != null)
             AudioManager.Instance.PlaySFX(clip);
+    }
+
+    /// <summary>
+    /// Tehlike sesini tam animasyonun çarpma anında (belirli bir süre sonra) çalar.
+    /// </summary>
+    private IEnumerator PlayHazardSFXWithDelay(AudioClip clip, float delay)
+    {
+        if (clip == null || AudioManager.Instance == null) yield break;
+        
+        // Objenin havada süzülme süresi kadar bekle
+        yield return new WaitForSeconds(delay);
+        
+        // Tam karakterin kafasına değdiği salisede sesi patlat!
+        AudioManager.Instance.PlaySFX(clip);
     }
 }
