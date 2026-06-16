@@ -32,6 +32,9 @@ public class ClickableZone : MonoBehaviour, IPointerClickHandler, IPointerEnterH
     [Tooltip("Bu bölgenin tehlike objesi sprite'ı (avize, buzdolabı, alev vb.) — ayrı child GameObject")]
     public SpriteRenderer hazardSpriteRenderer;
 
+    [Tooltip("Tehlike objesi oyun başında gizlensin mi? (Alev için tikli, Avize için tiksiz bırakın)")]
+    public bool hideHazardAtStart = true;
+
     [Tooltip("Tehlike animasyon tipi")]
     public HazardAnimationType hazardAnimationType = HazardAnimationType.FallFromAbove;
 
@@ -66,6 +69,10 @@ public class ClickableZone : MonoBehaviour, IPointerClickHandler, IPointerEnterH
     [Tooltip("Yeşil flash tekrar sayısı")]
     public int flashCount = 3;
 
+    [Header("Ses Efektleri")]
+    [Tooltip("Bu tehlike tetiklendiğinde çalacak ses (Avize düşmesi, ateş, devrilme vb.)")]
+    public AudioClip hazardSFX;
+
     // Olaylar
     /// <summary>
     /// Zone tıklandığında tetiklenir. Level2Controller dinler.
@@ -91,7 +98,7 @@ public class ClickableZone : MonoBehaviour, IPointerClickHandler, IPointerEnterH
             characterAnchor = transform;
 
         // Tehlike sprite'ını başlangıçta gizle
-        if (hazardSpriteRenderer != null)
+        if (hazardSpriteRenderer != null && hideHazardAtStart)
             hazardSpriteRenderer.gameObject.SetActive(false);
     }
 

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using System;
 using System.Collections;
@@ -12,6 +13,7 @@ public class CountdownUI : MonoBehaviour
     [Header("UI Referansları")]
     [Tooltip("Geri sayım metnini gösteren TextMeshPro (ekranın ortasında, büyük font)")]
     public TextMeshProUGUI countdownText;
+    public Image countdownBlur;
 
     [Header("Animasyon Ayarları")]
     [Tooltip("Her sayı arası bekleme süresi (saniye)")]
@@ -22,6 +24,10 @@ public class CountdownUI : MonoBehaviour
 
     [Tooltip("Sayı değişiminde maksimum scale çarpanı")]
     public float punchScaleMax = 1.5f;
+
+    [Header("Sesler")]
+    public AudioClip beepSFX;
+    public AudioClip goSFX;
 
     /// <summary>
     /// Geri sayım tamamlandığında tetiklenir.
@@ -41,6 +47,8 @@ public class CountdownUI : MonoBehaviour
     /// </summary>
     public void StartCountdown(int from = 3)
     {
+        if (countdownBlur != null)
+            countdownBlur.gameObject.SetActive(true);
         StartCoroutine(CountdownRoutine(from));
     }
 
@@ -54,12 +62,18 @@ public class CountdownUI : MonoBehaviour
         for (int i = from; i >= 1; i--)
         {
             countdownText.text = i.ToString();
+
+            if (beepSFX != null) AudioManager.Instance.PlaySFX(beepSFX);
+
             yield return StartCoroutine(PunchScaleText());
             yield return new WaitForSeconds(countdownInterval * 0.5f); // Punch + bekleme
         }
 
         // "BAŞLA!" göster
         countdownText.text = "BAŞLA!";
+
+        if (goSFX != null) AudioManager.Instance.PlaySFX(goSFX);
+
         yield return StartCoroutine(PunchScaleText());
         yield return new WaitForSeconds(startTextDuration * 0.5f);
 
@@ -67,6 +81,8 @@ public class CountdownUI : MonoBehaviour
         yield return StartCoroutine(FadeOutText());
 
         countdownText.gameObject.SetActive(false);
+        if (countdownBlur != null) 
+            countdownBlur.gameObject.SetActive(false);
 
         // Event tetikle
         OnCountdownFinished?.Invoke();
@@ -79,17 +95,19 @@ public class CountdownUI : MonoBehaviour
     {
         if (countdownText == null) yield break;
 
+        // DÜZELTME: CanvasGroup'u yazının kendisine DEĞİL, bu scriptin bağlı olduğu ana objeye (Panel'e) ekliyoruz!
+        CanvasGroup cg = GetComponent<CanvasGroup>();
+        if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
+
         RectTransform rect = countdownText.rectTransform;
         Vector3 originalScale = Vector3.one;
         Vector3 punchScale = Vector3.one * punchScaleMax;
         float duration = countdownInterval * 0.5f;
 
-        // Alpha'yı tam yap
-        Color c = countdownText.color;
-        c.a = 1f;
-        countdownText.color = c;
+        // Hem yazıyı hem de mavi arka planı tamamen görünür yap
+        cg.alpha = 1f;
 
-        // Scale başlangıcı (büyükten başla)
+        // Scale başlangıcı (Sadece yazıyı büyütüyoruz, arka plan sabit kalıyor)
         rect.localScale = punchScale;
 
         // Küçüle küçüle orijinal boyuta gel
@@ -116,32 +134,31 @@ public class CountdownUI : MonoBehaviour
     {
         if (countdownText == null) yield break;
 
+        // DÜZELTME: CanvasGroup'u ana objeden (Panel'den) alıyoruz
+        CanvasGroup cg = GetComponent<CanvasGroup>();
+        if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
+
         float duration = 0.3f;
         float elapsed = 0f;
-        Color startColor = countdownText.color;
         Vector3 startScale = countdownText.rectTransform.localScale;
-        Vector3 endScale = startScale * 1.3f; // Büyüyerek kaybolsun
+        Vector3 endScale = startScale * 1.3f; // Sadece yazı büyüyerek kaybolsun
 
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
 
-            // Alpha azalt
-            Color c = startColor;
-            c.a = Mathf.Lerp(1f, 0f, t);
-            countdownText.color = c;
+            // TÜM PANELİ (Mavi arka plan + Yazı) aynı anda şeffaflaştır
+            cg.alpha = Mathf.Lerp(1f, 0f, t);
 
-            // Scale büyüt
+            // Sadece YAZIYI büyüt
             countdownText.rectTransform.localScale = Vector3.Lerp(startScale, endScale, t);
 
             yield return null;
         }
 
-        // Reset
-        Color resetColor = startColor;
-        resetColor.a = 1f;
-        countdownText.color = resetColor;
+        // Reset (Bir sonraki oyun başladığında kutu yine görünür olsun diye)
+        //cg.alpha = 1f;
         countdownText.rectTransform.localScale = Vector3.one;
     }
 }

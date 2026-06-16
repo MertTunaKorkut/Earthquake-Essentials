@@ -1,5 +1,5 @@
-using UnityEngine;
 using System;
+using UnityEngine;
 
 /// <summary>
 /// Oyunun global puan sistemini yöneten singleton manager.
@@ -45,6 +45,9 @@ public class ScoreManager : MonoBehaviour
         }
 
         Instance = this;
+
+        transform.SetParent(null);
+
         DontDestroyOnLoad(gameObject);
     }
 

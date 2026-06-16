@@ -1,6 +1,6 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Collections;
 
 /// <summary>
 /// Oyunun genel akışını yöneten singleton manager.
@@ -36,6 +36,9 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
+
+        transform.SetParent(null);
+
         DontDestroyOnLoad(gameObject);
     }
 

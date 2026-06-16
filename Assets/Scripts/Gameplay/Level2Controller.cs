@@ -61,11 +61,21 @@ public class Level2Controller : MonoBehaviour
     [Tooltip("Kayanın düşerken dönme açısı (derece)")]
     public float rockFallRotation = 180f;
 
+    [Header("Tehlikeli obje ayarları")]
+    [Tooltip("Tehlikeli objenin oyun sonunda yok olma süresi (saniye)")]
+    public float hazardDestroyDelay = 0.7f;
+
+    [Header("Oda Geneli Sesler")]
+    public AudioClip earthquakeRumbleSFX;
+    public AudioClip rockCrashSFX;
+    public AudioClip timerTickSFX;
+
     // Dahili
     private float timeRemaining;
     private bool timerActive = false;
     private bool roomCompleted = false;
     private bool processingClick = false;
+    private float nextTickTime;
 
     private void Start()
     {
@@ -130,6 +140,15 @@ public class Level2Controller : MonoBehaviour
             timerActive = false;
             HandleTimerExpired();
         }
+        // Timer 5 saniyenin altındaysa ve 1 saniye geçtiyse
+        if (timeRemaining <= 5f && timeRemaining > 0f)
+        {
+            if (Time.time >= nextTickTime)
+            {
+                if (timerTickSFX != null) PlaySFX(timerTickSFX);
+                nextTickTime = Time.time + 1f; // Bir sonraki tik 1 saniye sonra
+            }
+        }
     }
 
     private void OnDestroy()
@@ -156,6 +175,9 @@ public class Level2Controller : MonoBehaviour
         // Kamera sallama başlat
         if (cameraShake != null)
             cameraShake.StartShake();
+
+        if (earthquakeRumbleSFX != null && AudioManager.Instance != null) 
+            AudioManager.Instance.PlayEnvironment(earthquakeRumbleSFX);
 
         // Zone'ları tıklanabilir yap
         SetAllZonesInteractable(true);
@@ -270,8 +292,10 @@ public class Level2Controller : MonoBehaviour
         // Hasar sprite'ına geç
         characterAnimator.ShowDamage();
 
+        if (rockCrashSFX != null) PlaySFX(rockCrashSFX);
+
         // Kısa bekleme
-        yield return new WaitForSeconds(1.0f);
+        yield return new WaitForSeconds(hazardDestroyDelay);
 
         // Kaya fade out
         yield return StartCoroutine(FadeOutSpriteRoutine(rockSpriteRenderer));
@@ -291,7 +315,7 @@ public class Level2Controller : MonoBehaviour
 
         // Geri bildirim göster
         if (feedbackUI != null)
-            feedbackUI.ShowWrong("Süre doldu! Kaya başına düştü!");
+            feedbackUI.ShowWrong("Süre doldu!");
 
         // Yanlış SFX
         PlaySFX(incorrectSFX);
@@ -402,6 +426,10 @@ public class Level2Controller : MonoBehaviour
                 // Zone-spesifik tehlike animasyonu
                 characterAnimator.PlayHazardDamage(zone, () =>
                 {
+                    // Tehlike SFX
+                    if (zone.hazardSFX != null && AudioManager.Instance != null)
+                        AudioManager.Instance.PlaySFX(zone.hazardSFX);
+
                     // -50 puan
                     if (ScoreManager.Instance != null)
                         ScoreManager.Instance.AddIncorrect();
@@ -468,6 +496,7 @@ public class Level2Controller : MonoBehaviour
         // Müziği durdur
         if (AudioManager.Instance != null)
             AudioManager.Instance.StopMusic();
+            AudioManager.Instance.StopEnvironment();
 
         StartCoroutine(CompleteRoomRoutine());
     }
