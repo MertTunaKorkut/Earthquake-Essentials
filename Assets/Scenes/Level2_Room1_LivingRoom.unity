@@ -782,7 +782,7 @@ MonoBehaviour:
   hazardDestroyDelay: 0.7
   earthquakeRumbleSFX: {fileID: 8300000, guid: c38dc234d872a384ca77056d07c3e449, type: 3}
   rockCrashSFX: {fileID: 8300000, guid: f0f9764f3f488ed47a4691af03208a5f, type: 3}
-  timerTickSFX: {fileID: 0}
+  timerTickSFX: {fileID: 8300000, guid: 409a3a019935d0a44b2e1ee5c786382e, type: 3}
 --- !u!4 &663814059
 Transform:
   m_ObjectHideFlags: 0
@@ -1132,7 +1132,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0.04
+  m_Volume: 0.05
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -1678,7 +1678,7 @@ MonoBehaviour:
   environmentSource: {fileID: 1777994706}
   musicVolume: 0.05
   sfxVolume: 1
-  environmentVolume: 0.6
+  environmentVolume: 1
 --- !u!1 &1328557389
 GameObject:
   m_ObjectHideFlags: 0
@@ -2561,7 +2561,7 @@ MonoBehaviour:
   flashColor: {r: 0.2, g: 0.9, b: 0.2, a: 0.6}
   flashDuration: 0.6
   flashCount: 3
-  hazardSFX: {fileID: 0}
+  hazardSFX: {fileID: 8300000, guid: 13f42e16113a3a644a93b10e95b0ada4, type: 3}
 --- !u!212 &1627748604
 SpriteRenderer:
   serializedVersion: 2
@@ -2816,7 +2816,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0.6
+  m_Volume: 1
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -3095,8 +3095,8 @@ MonoBehaviour:
   countdownInterval: 1
   startTextDuration: 0.6
   punchScaleMax: 1.5
-  beepSFX: {fileID: 0}
-  goSFX: {fileID: 0}
+  beepSFX: {fileID: 8300000, guid: 8b64349c3d671f44ca55b931dc8ceb28, type: 3}
+  goSFX: {fileID: 8300000, guid: a66927380ea66854fb2aa591ce7d5598, type: 3}
 --- !u!114 &1791866930
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3468,7 +3468,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60a1cf94244d844419e201c6aec4eebc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraShake
-  magnitude: 0.15
+  magnitude: 0.35
   frequency: 3
 --- !u!114 &1909758360
 MonoBehaviour:

@@ -1,18 +1,5 @@
 fileFormatVersion: 2
-guid: 5fdb13d3756c84fecac96f5a2d124370
-labels:
-- Audio
-- Casual
-- Sound
-- SFX
-- Effect
-AssetOrigin:
-  serializedVersion: 1
-  productId: 54116
-  packageName: FREE Casual Game SFX Pack
-  packageVersion: 1.1
-  assetPath: Assets/Casual Game Sounds U6/CasualGameSounds/DM-CGS-25.wav
-  uploadId: 688818
+guid: 409a3a019935d0a44b2e1ee5c786382e
 AudioImporter:
   externalObjects: {}
   serializedVersion: 8
@@ -21,7 +8,7 @@ AudioImporter:
     loadType: 0
     sampleRateSetting: 0
     sampleRateOverride: 44100
-    compressionFormat: 0
+    compressionFormat: 1
     quality: 1
     conversionMode: 0
     preloadAudioData: 1

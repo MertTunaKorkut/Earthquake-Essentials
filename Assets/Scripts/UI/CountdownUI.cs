@@ -37,9 +37,19 @@ public class CountdownUI : MonoBehaviour
 
     private void Awake()
     {
-        // Başlangıçta gizle
+        // 1. TEXTMESHPRO İLK ÇİZİM GECİKMESİNİ ÖNLEME
         if (countdownText != null)
-            countdownText.gameObject.SetActive(false);
+        {
+            // Objeyi tamamen kapatmak yerine yazıyı boşaltıp görünmez yapıyoruz.
+            // Böylece Unity fontu RAM'de hazır tutar ama ekrana bir şey çizmez, donma engellenir.
+            countdownText.text = ""; 
+            countdownText.gameObject.SetActive(true); 
+        }
+
+        // 2. SES DOSYALARINI RAM'E ZORLA YÜKLE (WARM-UP)
+        // Unity'ye "Bu sesleri bekleme, hemen şimdi çöz ve RAM'e al" emri veriyoruz.
+        if (beepSFX != null) beepSFX.LoadAudioData();
+        if (goSFX != null) goSFX.LoadAudioData();
     }
 
     /// <summary>
@@ -56,7 +66,7 @@ public class CountdownUI : MonoBehaviour
     {
         if (countdownText == null) yield break;
 
-        countdownText.gameObject.SetActive(true);
+        //countdownText.gameObject.SetActive(true);
 
         // Sayıları göster: 3, 2, 1
         for (int i = from; i >= 1; i--)

@@ -75,7 +75,8 @@ public class Level2Controller : MonoBehaviour
     private bool timerActive = false;
     private bool roomCompleted = false;
     private bool processingClick = false;
-    private float nextTickTime;
+    private bool isTicking = false;
+    private AudioSource timerAudioSource;
 
     private void Start()
     {
@@ -94,6 +95,10 @@ public class Level2Controller : MonoBehaviour
 
         // Timer'ı ayarla
         timeRemaining = roomData.timeLimit;
+
+        //Timer audio source'u oluştur
+        timerAudioSource = gameObject.AddComponent<AudioSource>();
+        timerAudioSource.playOnAwake = false;
 
         // Tüm zone'ları devre dışı bırak (countdown sırasında tıklanamaz)
         SetAllZonesInteractable(false);
@@ -136,13 +141,15 @@ public class Level2Controller : MonoBehaviour
             timerActive = false;
             HandleTimerExpired();
         }
-        // Timer 5 saniyenin altındaysa ve 1 saniye geçtiyse
-        if (timeRemaining <= 5f && timeRemaining > 0f)
+        // Timer 5 saniyenin altına düştüğünde uzun tikleme sesini SADECE BİR KERE başlat
+        if (timeRemaining <= 5f && timeRemaining > 0f && !isTicking)
         {
-            if (Time.time >= nextTickTime)
+            isTicking = true; // Ses başladı olarak işaretle ki bir daha tetiklemesin
+            
+            if (timerTickSFX != null && timerAudioSource != null)
             {
-                if (timerTickSFX != null) PlaySFX(timerTickSFX);
-                nextTickTime = Time.time + 1f; // Bir sonraki tik 1 saniye sonra
+                timerAudioSource.clip = timerTickSFX;
+                timerAudioSource.Play();
             }
         }
     }
@@ -217,6 +224,9 @@ public class Level2Controller : MonoBehaviour
         Debug.Log("[Level2Controller] Süre doldu! Kaya düşme animasyonu başlatılıyor...");
 
         roomCompleted = true;
+
+        if(timerAudioSource != null) timerAudioSource.Stop();
+        isTicking = false;
 
         // Zone'ları kapat
         SetAllZonesInteractable(false);
@@ -369,6 +379,10 @@ public class Level2Controller : MonoBehaviour
 
         roomCompleted = true;
         timerActive = false;
+
+        if(timerAudioSource != null) timerAudioSource.Stop();
+        isTicking = false;
+        
 
         // Kamera sallama yı durdur
         if (cameraShake != null)
